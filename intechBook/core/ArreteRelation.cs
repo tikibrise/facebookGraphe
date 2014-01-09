@@ -6,24 +6,28 @@ using System.Threading.Tasks;
 
 namespace core
 {
-    class ArreteRelation
+    public class ArreteRelation
     {
-        ArreteRelation(int orig, int dest, TypeRelation relation)
+        public ArreteRelation(SommetPersonne orig, SommetPersonne dest, TypeRelation relation)
         {
             _orig = orig;
             _dest = dest;
-            _relation = relation;
+            Relation = relation;
         }
 
-        int _orig;
-        int _dest;
+        SommetPersonne _orig;
+        SommetPersonne _dest;
 
-        TypeRelation _relation;
+        public SommetPersonne Orig { get { return _orig; } }
+        public SommetPersonne Dest { get { return _dest; } }
+        public TypeRelation Relation { get; set; }
     }
 }
 
-enum  TypeRelation 
+public enum  TypeRelation 
 {
     AMI=1,
-    COLLEGUE=2
+    COLLEGUE=2,
+    CAMARADE=3,
+    BUSINESS=4
 };
