@@ -18,7 +18,7 @@ namespace core
             _num = _currnum;
 
         }
-        List<ArreteRelation> Contacts;
+        public List<ArreteRelation> Contacts;
         readonly int _num;
         string _nom;
         string _prenom;
@@ -45,7 +45,7 @@ namespace core
                 phrase = string.Format("Cette personne ({0} {1}) n'est pas en contact direct ou indirect avec vous ({2} {3}).", but.Prenom, but.Nom, _prenom, _nom);
             else if (profondeur == 1)
                 phrase = string.Format("Cette personne ({0} {1}) est en contact direct avec vous ({2} {3}).", but.Prenom, but.Nom, _prenom, _nom);
-            else if (profondeur >= 1)
+            else if (profondeur > 1)
                 phrase = string.Format("Cette personne ({0} {1}) est en contact indirect avec vous ({2} {3}) avec une profondeur de {4}.", but.Prenom, but.Nom, _prenom, _nom, profondeur);
             else if (profondeur == 0)
                 phrase = string.Format("Cette personne ({0} {1}) est vous-même.", but.Prenom, but.Nom);
@@ -56,23 +56,33 @@ namespace core
         public int ChercherContactRec(SommetPersonne actuel, SommetPersonne but, List<SommetPersonne> Pparcourus)
         {
             if (Pparcourus.Contains(actuel))
+            {
+                if (actuel == but)
+                    return 0;
                 return -1;
+            }
             Pparcourus.Add(actuel);
             if (actuel == but)
                 return 0;
             int profondeur = -1;
+            int profondeurtmp = -1;
             foreach (ArreteRelation a in actuel.Contacts)
             {
-                profondeur = ChercherContactRec(a.Dest, but, Pparcourus);
+                profondeurtmp = ChercherContactRec(a.Dest, but, Pparcourus);
+                if (profondeurtmp != -1)
+                {
+                    if (profondeur == -1)
+                        profondeur=profondeurtmp ;
+                    else if (profondeurtmp < profondeur)
+                        profondeur = profondeurtmp;
+                }
             }
             if (profondeur >= 0)
                 return profondeur + 1;
             return profondeur;
         }
-        public string ListerContacts()
+        public string ListerContacts(List<SommetPersonne> contacts, List<int> Profondeurs)
         {
-            List<SommetPersonne> contacts = new List<SommetPersonne>();
-            List<int> Profondeurs = new List<int>();
             foreach (ArreteRelation a in this.Contacts)
             {
                 ListerContactsRec(a.Dest, 1, contacts, Profondeurs);
@@ -84,8 +94,18 @@ namespace core
         }
         public void ListerContactsRec(SommetPersonne actuel, int profondeurActuelle, List<SommetPersonne> contacts, List<int> Profondeurs)
         {
-            if (contacts.Contains(actuel))
+            if (actuel == this)
                 return;
+            if (contacts.Contains(actuel))
+            {
+                int idx= contacts.IndexOf(actuel);
+                if (Profondeurs[idx] > profondeurActuelle)
+                {
+                    Profondeurs[idx] = profondeurActuelle;
+                }
+                return;
+            }
+
             contacts.Add(actuel);
             Profondeurs.Add(profondeurActuelle);
             foreach (ArreteRelation a in actuel.Contacts)
