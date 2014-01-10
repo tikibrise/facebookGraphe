@@ -69,12 +69,30 @@ namespace core
                 return profondeur + 1;
             return profondeur;
         }
-        //public void ListerContactsRec(SommetPersonne actuel, SommetPersonne 
+        public string ListerContacts()
+        {
+            List<SommetPersonne> contacts = new List<SommetPersonne>();
+            List<int> Profondeurs = new List<int>();
+            foreach (ArreteRelation a in this.Contacts)
+            {
+                ListerContactsRec(a.Dest, 1, contacts, Profondeurs);
+            }    
+            if (contacts.Count!= Profondeurs.Count)
+                return string.Format("!!!!?");
 
-
-
-
-
+            return string.Format("Vous avez {0} contacts.", contacts.Count);
+        }
+        public void ListerContactsRec(SommetPersonne actuel, int profondeurActuelle, List<SommetPersonne> contacts, List<int> Profondeurs)
+        {
+            if (contacts.Contains(actuel))
+                return;
+            contacts.Add(actuel);
+            Profondeurs.Add(profondeurActuelle);
+            foreach (ArreteRelation a in actuel.Contacts)
+            {
+                ListerContactsRec(a.Dest, profondeurActuelle+1, contacts, Profondeurs);
+            }            
+        }
         static int _currnum;
     }
 }
