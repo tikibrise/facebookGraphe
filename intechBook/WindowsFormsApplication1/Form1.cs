@@ -103,5 +103,13 @@ namespace WindowsFormsApplication1
             }
         }
 
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedItem != null && listBox2.SelectedItem != null)
+            {
+                label5.Text = Init.listP[listBox1.SelectedIndex].ChercherParDijkstra(Init.listP[listBox2.SelectedIndex]);
+            }
+        }
+
     }
 }

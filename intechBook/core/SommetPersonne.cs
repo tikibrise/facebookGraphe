@@ -113,6 +113,126 @@ namespace core
                 ListerContactsRec(a.Dest, profondeurActuelle+1, contacts, Profondeurs);
             }            
         }
+        public unsafe string ChercherParDijkstra(SommetPersonne but)
+        {
+            if (Contacts.Count == 0)
+                return "Vous n'avez pas de contacts";
+            List<Chemin> chemins = new List<Chemin>();
+            chemins.Add(new Chemin());
+            int cheminSolution=-1;
+            int index=0;
+
+            ChercherParDijkstraRec(this, but, chemins, index, &cheminSolution);
+            if (cheminSolution!=-1)
+            return string.Format("Cette personne ({0} {1}) est en contact avec vous ({2} {3}) d'une profondeur de {4}.", but.Prenom, but.Nom, _prenom, _nom, chemins[cheminSolution].pointsParcourus.Count-1);
+
+            return string.Format("Cette personne ({0} {1}) n'est pas en contact avec vous ({2} {3}).", but.Prenom, but.Nom, _prenom, _nom);
+        }
+
+
+        public unsafe void ChercherParDijkstraRec(SommetPersonne actuel, SommetPersonne but, List<Chemin> chemins, int indexCheminActuel,  int* cheminSolution)
+        {
+            chemins[indexCheminActuel].pointsParcourus.Add(actuel);
+            if (actuel == but)
+            {
+                Chemin chem = chemins[indexCheminActuel];
+                *cheminSolution = indexCheminActuel;
+                return;
+            }
+            int nbChemins = chemins.Count;
+            if (actuel.Contacts.Count == 1 && actuel!=this)
+            {
+                chemins[indexCheminActuel].deadend = true;
+                int g = 0;
+                while (g < nbChemins)
+                {
+                    if (chemins[indexCheminActuel].pointsParcourus.Count >= chemins[g].pointsParcourus.Count)
+                    {
+                        if (!chemins[g].deadend)
+                        {
+                            indexCheminActuel = g;
+                            break;
+                        }
+                    }
+                    g++;
+                }
+            }
+            else if (actuel.Contacts.Count > 1)
+            {
+                if (nbChemins > 1)
+                {
+                    int j = 0;
+                    while (j < nbChemins)
+                    {
+                        if (chemins[indexCheminActuel].pointsParcourus.Count > chemins[j].pointsParcourus.Count)
+                        {
+                            if (!chemins[j].deadend)
+                            {
+                                indexCheminActuel = j;
+                                break;
+                            }
+                        }
+                        j++;
+                    }
+                }
+            }
+            int nbBranches = actuel.Contacts.Count;
+
+            int countValidBranches = 0;            
+            
+            for (int i = 0; i < nbBranches; i++ )
+            {
+                if (!chemins[indexCheminActuel].pointsParcourus.Contains(actuel.Contacts[i].Dest))
+                {
+                    for (int k=0; k < nbChemins; k++)
+                    {
+                        if (k != indexCheminActuel)
+                        {
+                            if (chemins[k].pointsParcourus.Contains(actuel.Contacts[i].Dest))
+                            {
+                                if (chemins[k].pointsParcourus.IndexOf(actuel.Contacts[i].Dest) > chemins[indexCheminActuel].pointsParcourus.Count + 1)
+                                {
+                                    if (countValidBranches == 0)
+                                    {
+                                        chemins[k].deadend = true;
+                                    }
+                                    countValidBranches++;
+                                }
+                            }
+
+
+
+                        }
+                    }
+                    if (countValidBranches == 0)
+                    {
+                        ChercherParDijkstraRec(actuel.Contacts[i].Dest, but, chemins, indexCheminActuel, cheminSolution);
+                        if (*cheminSolution != -1)
+                            return;
+                    }
+                    else
+                    {
+                        chemins.Add(new Chemin());
+                        chemins[chemins.Count-1].pointsParcourus.AddRange(chemins[indexCheminActuel].pointsParcourus);
+                        ChercherParDijkstraRec(actuel.Contacts[i].Dest, but, chemins, indexCheminActuel, cheminSolution);
+
+                    }
+                    countValidBranches++;
+
+                }
+                chemins[indexCheminActuel].deadend = true;  
+            } 
+        }
         static int _currnum;
+    }
+
+    public class Chemin
+    {
+        public Chemin()
+        {
+            pointsParcourus = new List<SommetPersonne>();
+        }
+       public readonly List<SommetPersonne> pointsParcourus;
+        public bool deadend;
     }
 }
