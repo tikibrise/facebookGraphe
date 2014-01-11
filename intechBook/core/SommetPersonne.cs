@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace core
 {
@@ -72,7 +73,7 @@ namespace core
                 if (profondeurtmp != -1)
                 {
                     if (profondeur == -1)
-                        profondeur=profondeurtmp ;
+                        profondeur = profondeurtmp;
                     else if (profondeurtmp < profondeur)
                         profondeur = profondeurtmp;
                 }
@@ -86,8 +87,8 @@ namespace core
             foreach (ArreteRelation a in this.Contacts)
             {
                 ListerContactsRec(a.Dest, 1, contacts, Profondeurs);
-            }    
-            if (contacts.Count!= Profondeurs.Count)
+            }
+            if (contacts.Count != Profondeurs.Count)
                 return string.Format("!!!!?");
 
             return string.Format("Vous avez {0} contacts.", contacts.Count);
@@ -98,7 +99,7 @@ namespace core
                 return;
             if (contacts.Contains(actuel))
             {
-                int idx= contacts.IndexOf(actuel);
+                int idx = contacts.IndexOf(actuel);
                 if (Profondeurs[idx] > profondeurActuelle)
                 {
                     Profondeurs[idx] = profondeurActuelle;
@@ -110,8 +111,8 @@ namespace core
             Profondeurs.Add(profondeurActuelle);
             foreach (ArreteRelation a in actuel.Contacts)
             {
-                ListerContactsRec(a.Dest, profondeurActuelle+1, contacts, Profondeurs);
-            }            
+                ListerContactsRec(a.Dest, profondeurActuelle + 1, contacts, Profondeurs);
+            }
         }
         public unsafe string ChercherParDijkstra(SommetPersonne but)
         {
@@ -119,18 +120,18 @@ namespace core
                 return "Vous n'avez pas de contacts";
             List<Chemin> chemins = new List<Chemin>();
             chemins.Add(new Chemin());
-            int cheminSolution=-1;
-            int index=0;
+            int cheminSolution = -1;
+            int index = 0;
 
             ChercherParDijkstraRec(this, but, chemins, index, &cheminSolution);
-            if (cheminSolution!=-1)
-            return string.Format("Cette personne ({0} {1}) est en contact avec vous ({2} {3}) d'une profondeur de {4}.", but.Prenom, but.Nom, _prenom, _nom, chemins[cheminSolution].pointsParcourus.Count-1);
+            if (cheminSolution != -1)
+                return string.Format("Cette personne ({0} {1}) est en contact avec vous ({2} {3}) d'une profondeur de {4}.", but.Prenom, but.Nom, _prenom, _nom, chemins[cheminSolution].pointsParcourus.Count - 1);
 
             return string.Format("Cette personne ({0} {1}) n'est pas en contact avec vous ({2} {3}).", but.Prenom, but.Nom, _prenom, _nom);
         }
 
 
-        public unsafe void ChercherParDijkstraRec(SommetPersonne actuel, SommetPersonne but, List<Chemin> chemins, int indexCheminActuel,  int* cheminSolution)
+        public unsafe void ChercherParDijkstraRec(SommetPersonne actuel, SommetPersonne but, List<Chemin> chemins, int indexCheminActuel, int* cheminSolution)
         {
             chemins[indexCheminActuel].pointsParcourus.Add(actuel);
             if (actuel == but)
@@ -140,7 +141,7 @@ namespace core
                 return;
             }
             int nbChemins = chemins.Count;
-            if (actuel.Contacts.Count == 1 && actuel!=this)
+            if (actuel.Contacts.Count == 1 && actuel != this)
             {
                 chemins[indexCheminActuel].deadend = true;
                 int g = 0;
@@ -178,13 +179,13 @@ namespace core
             }
             int nbBranches = actuel.Contacts.Count;
 
-            int countValidBranches = 0;            
-            
-            for (int i = 0; i < nbBranches; i++ )
+            int countValidBranches = 0;
+
+            for (int i = 0; i < nbBranches; i++)
             {
                 if (!chemins[indexCheminActuel].pointsParcourus.Contains(actuel.Contacts[i].Dest))
                 {
-                    for (int k=0; k < nbChemins; k++)
+                    for (int k = 0; k < nbChemins; k++)
                     {
                         if (k != indexCheminActuel)
                         {
@@ -192,10 +193,9 @@ namespace core
                             {
                                 if (chemins[k].pointsParcourus.IndexOf(actuel.Contacts[i].Dest) > chemins[indexCheminActuel].pointsParcourus.Count + 1)
                                 {
-                                    if (countValidBranches == 0)
-                                    {
-                                        chemins[k].deadend = true;
-                                    }
+
+                                    chemins[k].deadend = true;
+
                                     countValidBranches++;
                                 }
                             }
@@ -213,16 +213,171 @@ namespace core
                     else
                     {
                         chemins.Add(new Chemin());
-                        chemins[chemins.Count-1].pointsParcourus.AddRange(chemins[indexCheminActuel].pointsParcourus);
+                        chemins[chemins.Count - 1].pointsParcourus.AddRange(chemins[indexCheminActuel].pointsParcourus);
                         ChercherParDijkstraRec(actuel.Contacts[i].Dest, but, chemins, indexCheminActuel, cheminSolution);
 
                     }
                     countValidBranches++;
 
                 }
-                chemins[indexCheminActuel].deadend = true;  
-            } 
+                chemins[indexCheminActuel].deadend = true;
+            }
         }
+
+        public unsafe string ChercherParDijkstra2(SommetPersonne but)
+        {
+            if (but == this)
+                return string.Format("Cette personne ({0} {1}) c'est vous!", but.Prenom, but.Nom);
+            List<SommetPersonne> precedant = new List<SommetPersonne>();
+            List<SommetPersonne> Parcouru = new List<SommetPersonne>();
+            List<int> profondeurparcouru = new List<int>();
+            List<int> nbarretedusommetparcouru = new List<int>();
+            int idxSolution = -1;
+            ChercherParDijkstraRec2(precedant, this, but, Parcouru, profondeurparcouru, nbarretedusommetparcouru, &idxSolution);
+
+            if (idxSolution >= 0)
+                return string.Format("Cette personne ({0} {1}) est en contact avec vous ({2} {3}) d'une profondeur de {4}.", but.Prenom, but.Nom, _prenom, _nom, profondeurparcouru[idxSolution].ToString());
+
+            return string.Format("Cette personne ({0} {1}) n'est pas en contact avec vous ({2} {3}).", but.Prenom, but.Nom, _prenom, _nom);
+        }
+
+        public unsafe void ChercherParDijkstraRec2(List<SommetPersonne> precedant, SommetPersonne actuel, SommetPersonne but, List<SommetPersonne> Parcouru, List<int> profondeurparcouru, List<int> idxarretedusommetparcouru, int* idxSolution)
+        {
+            /* if (actuel != this && actuel == but)
+             {
+                 *idxSolution = Parcouru.IndexOf(precedant);
+                 return;
+             }*/
+            if (!Parcouru.Contains(actuel))
+            {
+                Parcouru.Add(actuel);
+                if (actuel == this)
+                {
+                    profondeurparcouru.Add(0);
+                    idxarretedusommetparcouru.Add(-1);
+                }
+                else
+                {
+                    int idx36 = Parcouru.IndexOf(actuel);
+                    Debug.Assert(idx36 > 0, "idx36<1!!!");
+                    Debug.Assert(idx36 < Parcouru.Count, " 0 l'index de l'actuel est >= au count de la liste des contacts de l'actuel");
+                    Debug.Assert(Parcouru.Count == precedant.Count + 1, " 0 il manque un précédent !!!");
+                    Debug.Assert(Parcouru.Contains(precedant[idx36 - 1]), "parcouru ne contient pas le précendent en question !!!");
+                    //Debug.Assert(idxarretedusommetparcouru[idx36] > -1, "0 idx de l'arrete =-1!!!");
+                    int idxprecedant1 = Parcouru.IndexOf(precedant[Parcouru.IndexOf(actuel) - 1]);
+                    profondeurparcouru.Add(profondeurparcouru[idxprecedant1] + 1);
+                    idxarretedusommetparcouru.Add(-1);
+                    if (actuel == but)
+                    {
+                        *idxSolution = Parcouru.IndexOf(actuel);
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                int indActuel = Parcouru.IndexOf(actuel);
+                Debug.Assert(idxarretedusommetparcouru[indActuel] < actuel.Contacts.Count, "l'index de l'actuel est >= au count de la liste des contacts de l'actuel");
+                //int indAncien = Parcouru.IndexOf(precedant[indActuel - 1]);
+
+                Debug.Assert(idxarretedusommetparcouru[indActuel] < actuel.Contacts.Count, "l'index de l'ancien est >= au count de la liste des contacts de l'ancien");
+                if (actuel != this)
+                {
+                    int indActuel2 = Parcouru.IndexOf(actuel);
+                    int idxprecedant2 = Parcouru.IndexOf(precedant[indActuel2 - 1]);
+                    //idxarretedusommetparcouru[idxprecedant2+1]++;
+                    if (profondeurparcouru[indActuel2] > profondeurparcouru[idxprecedant2] + 1)
+                    {
+                        profondeurparcouru[indActuel2] = profondeurparcouru[idxprecedant2] + 1;
+                    }
+                }
+
+            }
+            //rebasons-nous.
+            Rebase:
+            int maxcount = Parcouru.Count;
+            if (maxcount > 1)
+            {
+                int idxTMP = -1;
+                for (int i = 0; i < maxcount; i++)
+                {
+                        if (Parcouru[i].Contacts.Count > idxarretedusommetparcouru[i]+1)
+                        {
+                            if (idxTMP==-1)
+                            {
+                                idxTMP = i;
+                            }
+                            else
+                            {
+                                if (profondeurparcouru[i] < profondeurparcouru[idxTMP])
+                                    idxTMP = i;
+                            }
+                        }
+                    }
+                    if (idxTMP == -1)
+                        return;
+                    actuel = Parcouru[idxTMP];
+                }
+
+                int idx = Parcouru.IndexOf(actuel);
+
+
+                if (actuel != this)
+                {
+                    int idxprecedant3 = Parcouru.IndexOf(precedant[idx - 1]);
+                    Debug.Assert(Parcouru.Count == precedant.Count + 1, " 1.5 il manque un précédent !!!");
+                    Debug.Assert(idx > -1, " 1.5 idx=-1!!!");
+                    Debug.Assert(idxarretedusommetparcouru[idx] < actuel.Contacts.Count, " 1.5 l'index de l'actuel est >= au count de la liste des contacts de l'actuel");
+                    Debug.Assert(idxarretedusommetparcouru[idx]+1 > -1, "1.5 idx de l'arrete =-1!!!");
+                    if (actuel.Contacts[idxarretedusommetparcouru[idx]+1].Dest == precedant[idx - 1])
+                    {
+                        idxarretedusommetparcouru[idx]++;
+                        if (Parcouru[idx].Contacts.Count == idxarretedusommetparcouru[idx] + 1)
+                        {
+                            goto Rebase;
+                        }
+                    }
+                    Debug.Assert(Parcouru.Count == precedant.Count+1, " 2 il manque un précédent !!!");
+                    
+                    if (!Parcouru.Contains(actuel.Contacts[idxarretedusommetparcouru[idx]+1].Dest))
+                            precedant.Add(actuel);
+                        else
+                        {//
+                        int idxdest = Parcouru.IndexOf(actuel.Contacts[idxarretedusommetparcouru[idx] + 1].Dest);
+                        if (idxarretedusommetparcouru[idxdest] + 1 < Parcouru[idxdest].Contacts.Count)
+                        {
+                            if (actuel != this)
+                            {
+
+                                precedant[idxdest - 1] = actuel;
+                            }
+                            //precedant[idx - 1] = actuel;
+                        }
+                        else
+                        {
+                            idxarretedusommetparcouru[idx]++;
+                                goto Rebase;
+                        }
+                        }
+                        idxarretedusommetparcouru[idx]++;
+                        Debug.Assert(idx > -1, "idx=-1!!!");
+                        
+                        Debug.Assert(idxarretedusommetparcouru[idx] < actuel.Contacts.Count, " 2 l'index de l'actuel est >= au count de la liste des contacts de l'actuel");
+                        Debug.Assert(idxarretedusommetparcouru[idx] > -1, "idx de l'arrete =-1!!!");
+                        ChercherParDijkstraRec2(precedant, actuel.Contacts[idxarretedusommetparcouru[idx]].Dest, but, Parcouru, profondeurparcouru, idxarretedusommetparcouru, idxSolution);
+                }
+                else
+                {
+                    precedant.Add(actuel);
+                    Debug.Assert(Parcouru.Count == precedant.Count, " 2.5 il manque un précédent !!!");
+                    idxarretedusommetparcouru[idx]++;
+                    Debug.Assert(idx > -1, "idx=-1!!!");
+                    Debug.Assert(idxarretedusommetparcouru[idx] < actuel.Contacts.Count, " 2 l'index de l'actuel est >= au count de la liste des contacts de l'actuel");
+                    Debug.Assert(idxarretedusommetparcouru[idx] > -1, "idx de l'arrete =-1!!!");
+                    ChercherParDijkstraRec2(precedant, actuel.Contacts[idxarretedusommetparcouru[idx]].Dest, but, Parcouru, profondeurparcouru, idxarretedusommetparcouru, idxSolution);
+                }                
+            }
+        
         static int _currnum;
     }
 
@@ -232,7 +387,8 @@ namespace core
         {
             pointsParcourus = new List<SommetPersonne>();
         }
-       public readonly List<SommetPersonne> pointsParcourus;
+        public readonly List<SommetPersonne> pointsParcourus;
         public bool deadend;
     }
+
 }

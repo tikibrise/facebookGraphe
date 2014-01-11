@@ -107,7 +107,7 @@ namespace WindowsFormsApplication1
         {
             if (listBox1.SelectedItem != null && listBox2.SelectedItem != null)
             {
-                label5.Text = Init.listP[listBox1.SelectedIndex].ChercherParDijkstra(Init.listP[listBox2.SelectedIndex]);
+                label5.Text = Init.listP[listBox1.SelectedIndex].ChercherParDijkstra2(Init.listP[listBox2.SelectedIndex]);
             }
         }
 

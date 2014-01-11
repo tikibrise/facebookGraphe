@@ -33,6 +33,36 @@ namespace core
            listP[0].AddContact(listP[3]);
            listP[3].AddContact(listP[0]);
 
+           listP.Add(new SommetPersonne("qvv", "bb", "aaa@aa"));
+           listP.Add(new SommetPersonne("qaa", "zz", "aaa@aa"));
+           listP.Add(new SommetPersonne("qvp", "bb", "aaa@aa"));
+           listP.Add(new SommetPersonne("qap", "zz", "aaa@aa"));
+           listP.Add(new SommetPersonne("qar", "zz", "aaa@aa"));
+           listP.Add(new SommetPersonne("qrr", "zz", "aaa@aa"));
+
+           listP[6].AddContact(listP[2]);
+           listP[2].AddContact(listP[6]);
+
+           listP[6].AddContact(listP[7]);
+           listP[7].AddContact(listP[6]);
+
+           listP[8].AddContact(listP[7]);
+           listP[7].AddContact(listP[8]);
+
+           listP[8].AddContact(listP[3]);
+           listP[3].AddContact(listP[8]);
+
+           listP[8].AddContact(listP[9]);
+           listP[9].AddContact(listP[8]);
+
+           listP[10].AddContact(listP[9]);
+           listP[9].AddContact(listP[10]);
+
+           listP[10].AddContact(listP[11]);
+           listP[11].AddContact(listP[10]);
+
+           listP[11].AddContact(listP[7]);
+           listP[7].AddContact(listP[11]);
 
         }
 
